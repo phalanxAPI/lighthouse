@@ -1,19 +1,16 @@
-import express, { Request, Response } from 'express';
-import dotenv from 'dotenv';
+import express from 'express';
 import mongoose from 'mongoose';
+import systemInfoRoutes from '../routes/system-info-routes';
+import dotenv from "dotenv";
 
 dotenv.config();
-await mongoose.connect(process.env.MONGODB_URI || "");
-
-console.log('Connected to MongoDB');
-
 const app = express();
 const port = 3000;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
+mongoose.connect(process.env.MONGODB_URI || "");
+
+app.use('/api/v1', systemInfoRoutes);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
