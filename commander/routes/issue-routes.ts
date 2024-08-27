@@ -1,5 +1,5 @@
 import express from 'express';
-import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount, getIssueGraph } from '../controllers/issue-controller';
+import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount, getIssueGraph, getIssueGraphBySeverityAndStatus } from '../controllers/issue-controller';
 
 const issueRoutes = express.Router();
 
@@ -17,5 +17,7 @@ issueRoutes.get('/issuecount', getIssueCount);
 
 // Get a graph of all issues
 issueRoutes.get('/issuegraph', getIssueGraph);
+
+issueRoutes.get('/issuegraph/severity', getIssueGraphBySeverityAndStatus);
 
 export default issueRoutes;

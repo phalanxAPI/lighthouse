@@ -18,7 +18,7 @@ interface DayIssues {
 }
 
 export const getIssues = async (req: Request, res: Response) => {
-  const { appId } = req.query;
+  const { appId, perPage = '10', page = '1'} = req.query;
 
   console.log(`Received appId: ${appId}`); // Debugging log
   try {
@@ -28,8 +28,13 @@ export const getIssues = async (req: Request, res: Response) => {
 
     const appObjectId = appId as string;
     console.log(`Converted appId to ObjectId: ${appObjectId}`); // Debugging log
-    const issues = await Issue.find({ appId: appObjectId });
+
+    const limit = parseInt(perPage as string) || 10;
+    const skip = (parseInt(page as string) - 1) * limit || 0;
+
+    const issues = await Issue.find({ appId: appObjectId }).limit(limit).skip(skip);
     console.log(`Found issues: ${JSON.stringify(issues)}`); // Debugging log
+
     res.json(issues);
   } catch (error) {
     console.error(`Error fetching issues: ${error}`); // Debugging log
@@ -192,5 +197,88 @@ export const getIssueGraph = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(`Error getting issue graph: ${error}`); // Replace with proper logging in production
     res.status(500).json({ message: "Error getting issue graph", error });
+  }
+};
+
+export const getIssueGraphBySeverityAndStatus = async (req: Request, res: Response) => {
+  const { appId } = req.query;
+
+  try {
+    if (!appId) {
+      return res.status(400).json({ message: "appId is required" });
+    }
+
+    const appObjectId = new mongoose.Types.ObjectId(appId as string);
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+
+    const counts = await Issue.aggregate([
+      {
+        $match: {
+          appId: appObjectId,
+          raisedAt: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$raisedAt" },
+            month: { $month: "$raisedAt" },
+            day: { $dayOfMonth: "$raisedAt" },
+            hour: { $hour: "$raisedAt" },
+            status: "$status",
+            severity: "$severity"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $group: {
+          _id: { year: "$_id.year", month: "$_id.month", day: "$_id.day", hour: "$_id.hour" },
+          issues: {
+            $push: {
+              status: "$_id.status",
+              severity: "$_id.severity",
+              count: "$count"
+            }
+          }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1 }
+      }
+    ]);
+
+    const fullRange: Date[] = [];
+    for (let d = new Date(startDate); d <= endDate; d.setHours(d.getHours() + 1)) {
+      fullRange.push(d);
+    }
+
+    const result = fullRange.map(date => {
+      const log = counts.find(log => 
+        log._id.year === date.getFullYear() &&
+        log._id.month === date.getMonth() + 1 &&
+        log._id.day === date.getDate() &&
+        log._id.hour === date.getHours()
+      );
+
+      const openIssues = log ? log.issues.filter((issue: IssueCount) => issue.status === 'OPEN').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
+      const highSeverityIssues = log ? log.issues.filter((issue: IssueCount) => issue.severity === 'HIGH').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
+      const lowSeverityIssues = log ? log.issues.filter((issue: IssueCount) => issue.severity === 'LOW').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
+
+      return {
+        time: date,
+        openIssues,
+        highSeverityIssues,
+        lowSeverityIssues
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error(`Error getting issue graph by severity and status: ${error}`); // Replace with proper logging in production
+    res.status(500).json({ message: "Error getting issue graph by severity and status", error });
   }
 };
