@@ -1,5 +1,5 @@
 import express from 'express';
-import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount } from '../controllers/issue-controller';
+import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount, getIssueGraph } from '../controllers/issue-controller';
 
 const issueRoutes = express.Router();
 
@@ -14,5 +14,8 @@ issueRoutes.patch('/issue/:id/assign', assignAssigneeToIssue);
 
 // Get count of each type of issue
 issueRoutes.get('/issuecount', getIssueCount);
+
+// Get a graph of all issues
+issueRoutes.get('/issuegraph', getIssueGraph);
 
 export default issueRoutes;
