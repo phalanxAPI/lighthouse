@@ -22,3 +22,35 @@ export const getSecurityConfigurationsByApiId = async (req: Request, res: Respon
         res.status(500).json({ message: "Error fetching security configurations by API ID", error });
     }
 };
+
+export const upsertSecurityConfiguration = async (req: Request, res: Response) => {
+    const { apiId } = req.params;
+    const { configType } = req.query;
+    const { isEnabled, rules } = req.body;
+
+    console.log(`apiId: ${apiId}, configType: ${configType}, isEnabled: ${isEnabled}, rules: ${JSON.stringify(rules)}`);
+    try {
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(apiId)) {
+            return res.status(400).json({ message: "Invalid API ID" });
+        }
+
+        const apiObjectId = new mongoose.Types.ObjectId(apiId);
+
+        // Upsert the security configuration
+        const securityConfiguration = await SecurityConfiguration.findOneAndUpdate(
+            { apiId: apiObjectId, configType },
+            { isEnabled, rules },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        if (!securityConfiguration) {
+            return res.status(404).json({ message: "Security configuration not found or created" });
+        }
+
+        res.json(securityConfiguration);
+    } catch (error) {
+        console.error(`Error upserting security configuration: ${error}`); // Debugging log
+        res.status(500).json({ message: "Error upserting security configuration", error });
+    }
+};

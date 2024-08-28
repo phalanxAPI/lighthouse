@@ -7,6 +7,7 @@ import issueRoutes from '../routes/issue-routes';
 import applicationRoutes from '../routes/applicatoin-routes';
 import scanRoutes from '../routes/scan-routes';
 import rulesConfigRouter from '../routes/rulesconfig-routes';
+import bodyParser from 'body-parser';
 
 dotenv.config();
 const app = express();
@@ -14,7 +15,7 @@ const port = 3000;
 
 mongoose.connect(process.env.MONGODB_URI || "");
 
-app.use(express.json());
+app.use(bodyParser.json());
 
 app.use('/api/v1', systemInfoRoutes);
 app.use('/api/v1', apiRoutes);
