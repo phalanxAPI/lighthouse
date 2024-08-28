@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Scan from "../../arsenal/models/scan";
+import { scoutClient } from "../core/services";
 
 export const getScans = async (req: Request, res: Response) => {
   const { appId, perPage = "10", page = "1" } = req.query;
@@ -57,5 +58,31 @@ export const getScanById = async (req: Request, res: Response) => {
     res.json(scan);
   } catch (error) {
     res.status(500).json({ message: "Error fetching scan", error });
+  }
+};
+
+export const createScan = async (req: Request, res: Response) => {
+  const { appId } = req.query;
+
+  if (!appId) {
+    return res.status(400).json({ message: "appId is required" });
+  }
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      scoutClient.scanApp({ appId }, (err: any, response: any) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+          return;
+        }
+        console.log(response);
+        resolve();
+      });
+    });
+    res.status(200).json({ message: "Scan created successfully" });
+  } catch (error) {
+    console.error(`Error creating scan: ${error}`);
+    res.status(500).json({ message: "Error creating scan", error });
   }
 };
