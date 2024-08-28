@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import issueRoutes from '../routes/issue-routes';
 import applicationRoutes from '../routes/applicatoin-routes';
 import scanRoutes from '../routes/scan-routes';
+import rulesConfigRouter from '../routes/rulesconfig-routes';
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/v1', apiRoutes);
 app.use('/api/v1', issueRoutes);
 app.use('/api/v1', applicationRoutes);
 app.use('/api/v1', scanRoutes);
+app.use('/api/v1', rulesConfigRouter);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

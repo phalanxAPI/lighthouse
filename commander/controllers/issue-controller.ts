@@ -282,3 +282,31 @@ export const getIssueGraphBySeverityAndStatus = async (req: Request, res: Respon
     res.status(500).json({ message: "Error getting issue graph by severity and status", error });
   }
 };
+
+export const getIssuesByApiId = async (req: Request, res: Response) => {
+  const { perPage = '10', page = '1' } = req.query;
+  const { id: apiId } = req.params;
+
+  try {
+    if (!apiId) {
+      return res.status(400).json({ message: "apiId is required" });
+    }
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(apiId as string)) {
+      return res.status(400).json({ message: "Invalid API ID" });
+    }
+
+    const apiObjectId = new mongoose.Types.ObjectId(apiId as string);
+
+    const limit = parseInt(perPage as string) || 10;
+    const skip = (parseInt(page as string) - 1) * limit || 0;
+
+    const issues = await Issue.find({ apiId: apiObjectId }).limit(limit).skip(skip);
+
+    res.json(issues);
+  } catch (error) {
+    console.error(`Error fetching issues by API ID: ${error}`); // Debugging log
+    res.status(500).json({ message: "Error fetching issues by API ID", error });
+  }
+};

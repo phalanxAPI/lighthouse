@@ -1,5 +1,5 @@
 import express from 'express';
-import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount, getIssueGraph, getIssueGraphBySeverityAndStatus } from '../controllers/issue-controller';
+import { getIssues, getIssueById, assignAssigneeToIssue, getIssueCount, getIssueGraph, getIssueGraphBySeverityAndStatus, getIssuesByApiId } from '../controllers/issue-controller';
 
 const issueRoutes = express.Router();
 
@@ -19,5 +19,7 @@ issueRoutes.get('/issuecount', getIssueCount);
 issueRoutes.get('/issuegraph', getIssueGraph);
 
 issueRoutes.get('/issuegraph/severity', getIssueGraphBySeverityAndStatus);
+
+issueRoutes.get('/issue/api/:id', getIssuesByApiId);
 
 export default issueRoutes;
