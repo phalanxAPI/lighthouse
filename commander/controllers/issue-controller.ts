@@ -18,7 +18,7 @@ interface DayIssues {
 }
 
 export const getIssues = async (req: Request, res: Response) => {
-  const { appId, perPage = '10', page = '1'} = req.query;
+  const { appId, perPage = "10", page = "1" } = req.query;
 
   console.log(`Received appId: ${appId}`); // Debugging log
   try {
@@ -32,7 +32,9 @@ export const getIssues = async (req: Request, res: Response) => {
     const limit = parseInt(perPage as string) || 10;
     const skip = (parseInt(page as string) - 1) * limit || 0;
 
-    const issues = await Issue.find({ appId: appObjectId }).limit(limit).skip(skip);
+    const issues = await Issue.find({ appId: appObjectId })
+      .limit(limit)
+      .skip(skip);
     console.log(`Found issues: ${JSON.stringify(issues)}`); // Debugging log
 
     res.json(issues);
@@ -68,7 +70,8 @@ export const getIssueById = async (req: Request, res: Response) => {
 
 export const assignAssigneeToIssue = async (req: Request, res: Response) => {
   const { assigneeId } = req.body;
-  try {// Debugging log
+  try {
+    // Debugging log
     const updatedIssue = await Issue.findOneAndUpdate(
       { _id: req.params.id },
       { assigneeId: assigneeId },
@@ -103,25 +106,25 @@ export const getIssueCount = async (req: Request, res: Response) => {
       {
         $facet: {
           openIssues: [
-            { $match: { status: 'OPEN', appId: appObjectId } },
-            { $count: 'count' }
+            { $match: { status: "OPEN", appId: appObjectId } },
+            { $count: "count" },
           ],
           lowSeverityIssues: [
-            { $match: { severity: 'LOW', appId: appObjectId } },
-            { $count: 'count' }
+            { $match: { severity: "LOW", appId: appObjectId } },
+            { $count: "count" },
           ],
           highSeverityIssues: [
-            { $match: { severity: 'HIGH', appId: appObjectId } },
-            { $count: 'count' }
-          ]
-        }
-      }
+            { $match: { severity: "HIGH", appId: appObjectId } },
+            { $count: "count" },
+          ],
+        },
+      },
     ]);
 
     const result = {
       openIssues: counts[0].openIssues[0]?.count || 0,
       lowSeverityIssues: counts[0].lowSeverityIssues[0]?.count || 0,
-      highSeverityIssues: counts[0].highSeverityIssues[0]?.count || 0
+      highSeverityIssues: counts[0].highSeverityIssues[0]?.count || 0,
     };
 
     res.json(result);
@@ -148,8 +151,8 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       {
         $match: {
           appId: appObjectId,
-          raisedAt: { $gte: threeDaysAgo }
-        }
+          raisedAt: { $gte: threeDaysAgo },
+        },
       },
       {
         $group: {
@@ -158,10 +161,10 @@ export const getIssueGraph = async (req: Request, res: Response) => {
             month: { $month: "$raisedAt" },
             year: { $year: "$raisedAt" },
             status: "$status",
-            severity: "$severity"
+            severity: "$severity",
           },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
         $group: {
@@ -170,26 +173,32 @@ export const getIssueGraph = async (req: Request, res: Response) => {
             $push: {
               status: "$_id.status",
               severity: "$_id.severity",
-              count: "$count"
-            }
-          }
-        }
+              count: "$count",
+            },
+          },
+        },
       },
       {
-        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
-      }
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
+      },
     ]);
 
     const result = counts.map((day: DayIssues) => {
-      const openIssues = day.issues.filter((issue: IssueCount) => issue.status === 'OPEN').reduce((acc, issue) => acc + issue.count, 0);
-      const highSeverityIssues = day.issues.filter((issue: IssueCount) => issue.severity === 'HIGH').reduce((acc, issue) => acc + issue.count, 0);
-      const lowSeverityIssues = day.issues.filter((issue: IssueCount) => issue.severity === 'LOW').reduce((acc, issue) => acc + issue.count, 0);
+      const openIssues = day.issues
+        .filter((issue: IssueCount) => issue.status === "OPEN")
+        .reduce((acc, issue) => acc + issue.count, 0);
+      const highSeverityIssues = day.issues
+        .filter((issue: IssueCount) => issue.severity === "HIGH")
+        .reduce((acc, issue) => acc + issue.count, 0);
+      const lowSeverityIssues = day.issues
+        .filter((issue: IssueCount) => issue.severity === "LOW")
+        .reduce((acc, issue) => acc + issue.count, 0);
 
       return {
         date: `${day._id.year}-${day._id.month}-${day._id.day}`,
         openIssues,
         highSeverityIssues,
-        lowSeverityIssues
+        lowSeverityIssues,
       };
     });
 
@@ -200,7 +209,10 @@ export const getIssueGraph = async (req: Request, res: Response) => {
   }
 };
 
-export const getIssueGraphBySeverityAndStatus = async (req: Request, res: Response) => {
+export const getIssueGraphBySeverityAndStatus = async (
+  req: Request,
+  res: Response
+) => {
   const { appId } = req.query;
 
   try {
@@ -218,8 +230,8 @@ export const getIssueGraphBySeverityAndStatus = async (req: Request, res: Respon
       {
         $match: {
           appId: appObjectId,
-          raisedAt: { $gte: startDate, $lte: endDate }
-        }
+          raisedAt: { $gte: startDate, $lte: endDate },
+        },
       },
       {
         $group: {
@@ -229,62 +241,89 @@ export const getIssueGraphBySeverityAndStatus = async (req: Request, res: Respon
             day: { $dayOfMonth: "$raisedAt" },
             hour: { $hour: "$raisedAt" },
             status: "$status",
-            severity: "$severity"
+            severity: "$severity",
           },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
         $group: {
-          _id: { year: "$_id.year", month: "$_id.month", day: "$_id.day", hour: "$_id.hour" },
+          _id: {
+            year: "$_id.year",
+            month: "$_id.month",
+            day: "$_id.day",
+            hour: "$_id.hour",
+          },
           issues: {
             $push: {
               status: "$_id.status",
               severity: "$_id.severity",
-              count: "$count"
-            }
-          }
-        }
+              count: "$count",
+            },
+          },
+        },
       },
       {
-        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1 }
-      }
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1 },
+      },
     ]);
 
     const fullRange: Date[] = [];
-    for (let d = new Date(startDate); d <= endDate; d.setHours(d.getHours() + 1)) {
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setHours(d.getHours() + 1)
+    ) {
       fullRange.push(d);
     }
 
-    const result = fullRange.map(date => {
-      const log = counts.find(log => 
-        log._id.year === date.getFullYear() &&
-        log._id.month === date.getMonth() + 1 &&
-        log._id.day === date.getDate() &&
-        log._id.hour === date.getHours()
+    const result = fullRange.map((date) => {
+      const log = counts.find(
+        (log) =>
+          log._id.year === date.getFullYear() &&
+          log._id.month === date.getMonth() + 1 &&
+          log._id.day === date.getDate() &&
+          log._id.hour === date.getHours()
       );
 
-      const openIssues = log ? log.issues.filter((issue: IssueCount) => issue.status === 'OPEN').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
-      const highSeverityIssues = log ? log.issues.filter((issue: IssueCount) => issue.severity === 'HIGH').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
-      const lowSeverityIssues = log ? log.issues.filter((issue: IssueCount) => issue.severity === 'LOW').reduce((acc: any, issue: any) => acc + issue.count, 0) : 0;
+      const openIssues = log
+        ? log.issues
+            .filter((issue: IssueCount) => issue.status === "OPEN")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
+      const highSeverityIssues = log
+        ? log.issues
+            .filter((issue: IssueCount) => issue.severity === "HIGH")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
+      const lowSeverityIssues = log
+        ? log.issues
+            .filter((issue: IssueCount) => issue.severity === "LOW")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
 
       return {
         time: date,
         openIssues,
         highSeverityIssues,
-        lowSeverityIssues
+        lowSeverityIssues,
       };
     });
 
     res.json(result);
   } catch (error) {
     console.error(`Error getting issue graph by severity and status: ${error}`); // Replace with proper logging in production
-    res.status(500).json({ message: "Error getting issue graph by severity and status", error });
+    res
+      .status(500)
+      .json({
+        message: "Error getting issue graph by severity and status",
+        error,
+      });
   }
 };
 
 export const getIssuesByApiId = async (req: Request, res: Response) => {
-  const { perPage = '10', page = '1' } = req.query;
+  const { perPage = "10", page = "1" } = req.query;
   const { id: apiId } = req.params;
 
   try {
@@ -302,7 +341,9 @@ export const getIssuesByApiId = async (req: Request, res: Response) => {
     const limit = parseInt(perPage as string) || 10;
     const skip = (parseInt(page as string) - 1) * limit || 0;
 
-    const issues = await Issue.find({ apiId: apiObjectId }).limit(limit).skip(skip);
+    const issues = await Issue.find({ apiId: apiObjectId })
+      .limit(limit)
+      .skip(skip);
 
     res.json(issues);
   } catch (error) {
