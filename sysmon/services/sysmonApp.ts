@@ -17,7 +17,7 @@ export const sysMon = async (data: SysMonRequest): Promise<SysMonResponse> => {
       battery,
     });
 
-    return { scanId: sysMonEntry._id.toString() };
+    return { message: "System monitoring data stored successfully" }; // Explicitly cast to string
   } catch (err) {
     console.error(`Error storing system monitoring data: ${err}`);
     throw new Error("Failed to store system monitoring data");
