@@ -39,6 +39,7 @@ export const getCpuUsageForGraph = async (req: Request, res: Response) => {
 
     // Fetch all servers for the given appId
     const servers = await Server.find({ appId: appObjectId });
+    console.log(`Fetched servers: ${JSON.stringify(servers)}`);
 
     // Get the current date and the date one week ago
     const endDate = new Date();
@@ -75,6 +76,7 @@ export const getCpuUsageForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
+        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -108,6 +110,7 @@ export const getCpuUsageForGraph = async (req: Request, res: Response) => {
 
     res.json(serverData);
   } catch (error) {
+    console.error(`Error fetching CPU usage for graph: ${error}`);
     res
       .status(500)
       .json({ message: "Error fetching CPU usage for graph", error });
@@ -123,6 +126,7 @@ export const getMemoryUsageForGraph = async (req: Request, res: Response) => {
 
     // Fetch all servers for the given appId
     const servers = await Server.find({ appId: appObjectId });
+    console.log(`Fetched servers: ${JSON.stringify(servers)}`);
 
     // Get the current date and the date one week ago
     const endDate = new Date();
@@ -159,6 +163,7 @@ export const getMemoryUsageForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
+        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -192,6 +197,7 @@ export const getMemoryUsageForGraph = async (req: Request, res: Response) => {
 
     res.json(serverData);
   } catch (error) {
+    console.error(`Error fetching memory usage for graph: ${error}`);
     res
       .status(500)
       .json({ message: "Error fetching memory usage for graph", error });
@@ -207,6 +213,7 @@ export const getDiskIOForGraph = async (req: Request, res: Response) => {
 
     // Fetch all servers for the given appId
     const servers = await Server.find({ appId: appObjectId });
+    console.log(`Fetched servers: ${JSON.stringify(servers)}`);
 
     // Get the current date and the date one week ago
     const endDate = new Date();
@@ -244,6 +251,7 @@ export const getDiskIOForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
+        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -278,6 +286,7 @@ export const getDiskIOForGraph = async (req: Request, res: Response) => {
 
     res.json(serverData);
   } catch (error) {
+    console.error(`Error fetching disk I/O for graph: ${error}`);
     res
       .status(500)
       .json({ message: "Error fetching disk I/O for graph", error });
@@ -293,6 +302,7 @@ export const getNetworkStatsForGraph = async (req: Request, res: Response) => {
 
     // Fetch all servers for the given appId
     const servers = await Server.find({ appId: appObjectId });
+    console.log(`Fetched servers: ${JSON.stringify(servers)}`);
 
     // Get the current date and the date one week ago
     const endDate = new Date();
@@ -335,6 +345,7 @@ export const getNetworkStatsForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
+        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -369,6 +380,7 @@ export const getNetworkStatsForGraph = async (req: Request, res: Response) => {
 
     res.json(serverData);
   } catch (error) {
+    console.error(`Error fetching network stats for graph: ${error}`);
     res
       .status(500)
       .json({ message: "Error fetching network stats for graph", error });

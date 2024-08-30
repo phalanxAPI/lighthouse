@@ -9,7 +9,10 @@ import { sysMon } from "../services/sysmonApp";
 
 const PORT = process.env.PORT || 9001;
 
-const packageDef = loadSync(path.join(__dirname, "../../arsenal/proto/sysmon.lighthouse.proto"), {});
+const packageDef = loadSync(path.join(__dirname, "../../arsenal/proto/sysmon.lighthouse.proto"), {
+  // "grpc.max_receive_message_length": length as number, "grpc.max_send_message_length": length as number
+  
+});
 const gRPCObject = gRPC.loadPackageDefinition(packageDef);
 
 console.log(JSON.stringify(gRPCObject, null, 2));
@@ -17,8 +20,8 @@ console.log(JSON.stringify(gRPCObject, null, 2));
 
 const phalanxPackage = gRPCObject.phalanx as GrpcObject;
 const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
-const lighthousePackage = arsenalPackage.lighthouse as GrpcObject;
-export const sysmonPackage = lighthousePackage.sysmon as GrpcObject;
+// const lighthousePackage = arsenalPackage.lighthouse as GrpcObject;
+export const sysmonPackage = arsenalPackage.sysmon as GrpcObject;
 
 const sysmonConstructor =
   sysmonPackage.SysMonService as ServiceClientConstructor;
