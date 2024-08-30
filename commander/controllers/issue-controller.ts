@@ -135,7 +135,7 @@ export const getIssueCount = async (req: Request, res: Response) => {
 };
 
 export const getIssueGraph = async (req: Request, res: Response) => {
-  const { appId } = req.query;
+  const { appId, page = 1, limit = 10 } = req.query;
 
   try {
     if (!appId) {
@@ -146,6 +146,11 @@ export const getIssueGraph = async (req: Request, res: Response) => {
 
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    const totalCount = await Issue.countDocuments({
+      appId: appObjectId,
+      raisedAt: { $gte: threeDaysAgo },
+    });
 
     const counts = await Issue.aggregate([
       {
@@ -181,18 +186,24 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       {
         $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
       },
+      {
+        $skip: (Number(page) - 1) * Number(limit),
+      },
+      {
+        $limit: Number(limit),
+      },
     ]);
 
-    const result = counts.map((day: DayIssues) => {
+    const result = counts.map((day: any) => {
       const openIssues = day.issues
-        .filter((issue: IssueCount) => issue.status === "OPEN")
-        .reduce((acc, issue) => acc + issue.count, 0);
+        .filter((issue: any) => issue.status === "OPEN")
+        .reduce((acc: any, issue: any) => acc + issue.count, 0);
       const highSeverityIssues = day.issues
-        .filter((issue: IssueCount) => issue.severity === "HIGH")
-        .reduce((acc, issue) => acc + issue.count, 0);
+        .filter((issue: any) => issue.severity === "HIGH")
+        .reduce((acc: any, issue: any) => acc + issue.count, 0);
       const lowSeverityIssues = day.issues
-        .filter((issue: IssueCount) => issue.severity === "LOW")
-        .reduce((acc, issue) => acc + issue.count, 0);
+        .filter((issue: any) => issue.severity === "LOW")
+        .reduce((acc: any, issue: any) => acc + issue.count, 0);
 
       return {
         date: `${day._id.year}-${day._id.month}-${day._id.day}`,
@@ -202,7 +213,17 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       };
     });
 
-    res.json(result);
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    res.json({
+      data: result,
+      metadata: {
+        totalCount,
+        totalPages,
+        currentPage: Number(page),
+        limit: Number(limit),
+      },
+    });
   } catch (error) {
     console.error(`Error getting issue graph: ${error}`); // Replace with proper logging in production
     res.status(500).json({ message: "Error getting issue graph", error });
@@ -213,7 +234,7 @@ export const getIssueGraphBySeverityAndStatus = async (
   req: Request,
   res: Response
 ) => {
-  const { appId } = req.query;
+  const { appId, page = 1, limit = 10 } = req.query;
 
   try {
     if (!appId) {
@@ -225,6 +246,11 @@ export const getIssueGraphBySeverityAndStatus = async (
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
+
+    const totalCount = await Issue.countDocuments({
+      appId: appObjectId,
+      raisedAt: { $gte: startDate, $lte: endDate },
+    });
 
     const counts = await Issue.aggregate([
       {
@@ -266,6 +292,12 @@ export const getIssueGraphBySeverityAndStatus = async (
       {
         $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1 },
       },
+      {
+        $skip: (Number(page) - 1) * Number(limit),
+      },
+      {
+        $limit: Number(limit),
+      },
     ]);
 
     const fullRange: Date[] = [];
@@ -274,7 +306,7 @@ export const getIssueGraphBySeverityAndStatus = async (
       d <= endDate;
       d.setHours(d.getHours() + 1)
     ) {
-      fullRange.push(d);
+      fullRange.push(new Date(d));
     }
 
     const result = fullRange.map((date) => {
@@ -288,17 +320,17 @@ export const getIssueGraphBySeverityAndStatus = async (
 
       const openIssues = log
         ? log.issues
-            .filter((issue: IssueCount) => issue.status === "OPEN")
+            .filter((issue: any) => issue.status === "OPEN")
             .reduce((acc: any, issue: any) => acc + issue.count, 0)
         : 0;
       const highSeverityIssues = log
         ? log.issues
-            .filter((issue: IssueCount) => issue.severity === "HIGH")
+            .filter((issue: any) => issue.severity === "HIGH")
             .reduce((acc: any, issue: any) => acc + issue.count, 0)
         : 0;
       const lowSeverityIssues = log
         ? log.issues
-            .filter((issue: IssueCount) => issue.severity === "LOW")
+            .filter((issue: any) => issue.severity === "LOW")
             .reduce((acc: any, issue: any) => acc + issue.count, 0)
         : 0;
 
@@ -310,15 +342,23 @@ export const getIssueGraphBySeverityAndStatus = async (
       };
     });
 
-    res.json(result);
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    res.json({
+      data: result,
+      metadata: {
+        totalCount,
+        totalPages,
+        currentPage: Number(page),
+        limit: Number(limit),
+      },
+    });
   } catch (error) {
     console.error(`Error getting issue graph by severity and status: ${error}`); // Replace with proper logging in production
-    res
-      .status(500)
-      .json({
-        message: "Error getting issue graph by severity and status",
-        error,
-      });
+    res.status(500).json({
+      message: "Error getting issue graph by severity and status",
+      error,
+    });
   }
 };
 
