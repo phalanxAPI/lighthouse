@@ -15,7 +15,7 @@ const packageDef = loadSync(path.join(__dirname, "../../arsenal/proto/sysmon.lig
 });
 const gRPCObject = gRPC.loadPackageDefinition(packageDef);
 
-console.log(JSON.stringify(gRPCObject, null, 2));
+// console.log(JSON.stringify(gRPCObject, null, 2));
 
 
 const phalanxPackage = gRPCObject.phalanx as GrpcObject;
@@ -24,25 +24,29 @@ const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
 export const sysmonPackage = arsenalPackage.sysmon as GrpcObject;
 
 const sysmonConstructor =
-  sysmonPackage.SysMonService as ServiceClientConstructor;
-const SysMonService = sysmonConstructor.service;
+  sysmonPackage.SysmonService as ServiceClientConstructor;
+const SysmonService = sysmonConstructor.service;
+
+console.log(sysmonConstructor);
 
 const server = new gRPC.Server();
 
 const initServer = (service: SysMonService) => {
-  const servicesMap: gRPC.UntypedServiceImplementation = {
-    SysMon: async (call: any, callback: any) => {
+  const servicesMap: gRPC.UntypedServiceImplementation = {};
+
+  Object.entries(service).forEach(([key, value]) => {
+    servicesMap[key] = async (call: any, callback: any) => {
       try {
-        const response = await sysMon(call.request);
+        const response = await value(call.request);
         callback(null, response);
       } catch (err) {
         console.error(err);
         callback(err, null);
       }
-    },
-  };
+    };
+  });
 
-  server.addService(SysMonService, servicesMap);
+  server.addService(SysmonService, servicesMap);
   server.bindAsync(
     `0.0.0.0:${PORT}`,
     gRPC.ServerCredentials.createInsecure(),

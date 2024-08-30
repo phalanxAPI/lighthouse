@@ -39,9 +39,9 @@ export type ReportSystemStateRequest = {
 };
 
 export type SysMonResponse = {
-  message: string; // Update the response type to include a message
+  message: string;
 };
 
 export type SysMonService = {
-  ReportSystemState: (data: ReportSystemStateRequest) => Promise<SysMonResponse>;
+  reportSystemState: (data: ReportSystemStateRequest) => Promise<SysMonResponse>;
 };
