@@ -19,8 +19,3 @@ export var scoutClient = new scoutConstructor(
   process.env.SCOUT_SERVICE || "localhost:9001",
   gRPC.credentials.createInsecure()
 );
-
-console.log("scout Client:", scoutClient.scanApp);
-// console.log(scoutClient);
-
-console.log("scout constructor:", scoutConstructor);

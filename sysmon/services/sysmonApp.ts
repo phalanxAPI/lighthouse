@@ -1,23 +1,19 @@
 // sysMon.ts
 import SystemInfo from "../../arsenal/models/system-info";
-import { SysMonRequest, SysMonResponse } from "../types/proto";
+import { ReportSystemStateRequest, SysMonResponse } from "../types/proto";
 
-export const sysMon = async (data: SysMonRequest): Promise<SysMonResponse> => {
-  const { appId, serverId, cpuLoad, memUsage, diskIO, networkStats, battery } =
-    data;
+export const sysMon = async (data: ReportSystemStateRequest): Promise<SysMonResponse> => {
+  const { appId, serverId, timestamp, systemInfo } = data;
 
   try {
     const sysMonEntry = await SystemInfo.create({
       appId,
       serverId,
-      cpuLoad,
-      memUsage,
-      diskIO,
-      networkStats,
-      battery,
+      timestamp,
+      ...systemInfo, // Spread the systemInfo object to include its properties
     });
 
-    return { message: "System monitoring data stored successfully" }; // Explicitly cast to string
+    return { message: "System monitoring data stored successfully" };
   } catch (err) {
     console.error(`Error storing system monitoring data: ${err}`);
     throw new Error("Failed to store system monitoring data");

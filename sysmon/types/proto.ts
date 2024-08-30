@@ -1,26 +1,41 @@
 // proto.ts
-export type SysMonRequest = {
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
+
+export type NetworkStats = {
+  interface: string;
+  rxSec: number;
+  txSec: number;
+};
+
+export type MemUsage = {
+  active: number;
+  total: number;
+  usagePercent: string;
+};
+
+export type DiskIO = {
+  read: number;
+  write: number;
+};
+
+export type Battery = {
+  percent: number;
+  isCharging: boolean;
+};
+
+export type SystemInfo = {
+  cpuLoad: string;
+  memUsage: MemUsage;
+  diskIO: DiskIO;
+  networkStats: NetworkStats[];
+  battery: Battery;
+};
+
+export type ReportSystemStateRequest = {
   appId: string;
   serverId: string;
-  cpuLoad: number;
-  memUsage: {
-    active: number;
-    total: number;
-    usagePercent: number;
-  };
-  diskIO: {
-    read: number;
-    write: number;
-  };
-  networkStats: {
-    interface: string;
-    rx_sec: number;
-    tx_sec: number;
-  }[];
-  battery: {
-    percent: number;
-    isCharging: boolean;
-  };
+  timestamp: Timestamp;
+  systemInfo: SystemInfo;
 };
 
 export type SysMonResponse = {
@@ -28,5 +43,5 @@ export type SysMonResponse = {
 };
 
 export type SysMonService = {
-  SysMon: (data: SysMonRequest) => Promise<SysMonResponse>;
+  ReportSystemState: (data: ReportSystemStateRequest) => Promise<SysMonResponse>;
 };

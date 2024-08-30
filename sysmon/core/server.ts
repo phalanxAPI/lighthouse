@@ -1,15 +1,19 @@
 // server.ts
 import * as gRPC from "@grpc/grpc-js";
+import * as path from 'path';
 import { GrpcObject, ServiceClientConstructor } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
 import { SysMonService } from "../types/proto";
 import { sysMon } from "../services/sysmonApp";
-import { initDB } from "./db";
+// import { initDB } from "./db";
 
 const PORT = process.env.PORT || 9001;
 
-const packageDef = loadSync("arsenal/proto/sysmon.lighthouse.proto", {});
+const packageDef = loadSync(path.join(__dirname, "../../arsenal/proto/sysmon.lighthouse.proto"), {});
 const gRPCObject = gRPC.loadPackageDefinition(packageDef);
+
+console.log(JSON.stringify(gRPCObject, null, 2));
+
 
 const phalanxPackage = gRPCObject.phalanx as GrpcObject;
 const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
@@ -24,7 +28,7 @@ const server = new gRPC.Server();
 
 const initServer = (service: SysMonService) => {
   const servicesMap: gRPC.UntypedServiceImplementation = {
-    SysMon: async (call, callback) => {
+    SysMon: async (call: any, callback: any) => {
       try {
         const response = await sysMon(call.request);
         callback(null, response);
