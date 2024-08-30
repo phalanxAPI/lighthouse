@@ -32,12 +32,24 @@ export const getIssues = async (req: Request, res: Response) => {
     const limit = parseInt(perPage as string) || 10;
     const skip = (parseInt(page as string) - 1) * limit || 0;
 
+    // Calculate the total number of documents
+    const totalCount = await Issue.countDocuments({ appId: appObjectId });
+    const totalPages = Math.ceil(totalCount / limit);
+
     const issues = await Issue.find({ appId: appObjectId })
       .limit(limit)
       .skip(skip);
     console.log(`Found issues: ${JSON.stringify(issues)}`); // Debugging log
 
-    res.json(issues);
+    res.json({
+      data: issues,
+      metadata: {
+        totalCount,
+        totalPages,
+        currentPage: parseInt(page as string),
+        limit,
+      },
+    });
   } catch (error) {
     console.error(`Error fetching issues: ${error}`); // Debugging log
     res.status(500).json({ message: "Error fetching issues", error });
@@ -135,7 +147,7 @@ export const getIssueCount = async (req: Request, res: Response) => {
 };
 
 export const getIssueGraph = async (req: Request, res: Response) => {
-  const { appId, page = 1, limit = 10 } = req.query;
+  const { appId } = req.query;
 
   try {
     if (!appId) {
@@ -146,11 +158,6 @@ export const getIssueGraph = async (req: Request, res: Response) => {
 
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-
-    const totalCount = await Issue.countDocuments({
-      appId: appObjectId,
-      raisedAt: { $gte: threeDaysAgo },
-    });
 
     const counts = await Issue.aggregate([
       {
@@ -186,12 +193,6 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       {
         $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
       },
-      {
-        $skip: (Number(page) - 1) * Number(limit),
-      },
-      {
-        $limit: Number(limit),
-      },
     ]);
 
     const result = counts.map((day: any) => {
@@ -213,17 +214,7 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       };
     });
 
-    const totalPages = Math.ceil(totalCount / Number(limit));
-
-    res.json({
-      data: result,
-      metadata: {
-        totalCount,
-        totalPages,
-        currentPage: Number(page),
-        limit: Number(limit),
-      },
-    });
+    res.json({ data: result });
   } catch (error) {
     console.error(`Error getting issue graph: ${error}`); // Replace with proper logging in production
     res.status(500).json({ message: "Error getting issue graph", error });
@@ -234,7 +225,7 @@ export const getIssueGraphBySeverityAndStatus = async (
   req: Request,
   res: Response
 ) => {
-  const { appId, page = 1, limit = 10 } = req.query;
+  const { appId } = req.query;
 
   try {
     if (!appId) {
@@ -246,11 +237,6 @@ export const getIssueGraphBySeverityAndStatus = async (
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
-
-    const totalCount = await Issue.countDocuments({
-      appId: appObjectId,
-      raisedAt: { $gte: startDate, $lte: endDate },
-    });
 
     const counts = await Issue.aggregate([
       {
@@ -291,12 +277,6 @@ export const getIssueGraphBySeverityAndStatus = async (
       },
       {
         $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1 },
-      },
-      {
-        $skip: (Number(page) - 1) * Number(limit),
-      },
-      {
-        $limit: Number(limit),
       },
     ]);
 
@@ -342,17 +322,7 @@ export const getIssueGraphBySeverityAndStatus = async (
       };
     });
 
-    const totalPages = Math.ceil(totalCount / Number(limit));
-
-    res.json({
-      data: result,
-      metadata: {
-        totalCount,
-        totalPages,
-        currentPage: Number(page),
-        limit: Number(limit),
-      },
-    });
+    res.json({ data: result });
   } catch (error) {
     console.error(`Error getting issue graph by severity and status: ${error}`); // Replace with proper logging in production
     res.status(500).json({
