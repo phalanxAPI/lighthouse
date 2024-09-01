@@ -15,7 +15,10 @@ export const reportOutbound = async (
       throw new Error("Application not found");
     }
 
-    const server = await Server.findOne({ name: requestInfo.serverId });
+    const server = await Server.findOne({
+      name: requestInfo.serverId,
+      appId: app._id,
+    });
     if (!server) {
       console.error("Server not found");
       throw new Error("Server not found");
@@ -35,6 +38,8 @@ export const reportOutbound = async (
 
     const history = await RequestLogModel.find({
       appId: app._id,
+      url: requestInfo.url,
+      method: requestInfo.method,
       requestType: "OUTGOING",
     })
       .sort({ timestamp: -1 })
