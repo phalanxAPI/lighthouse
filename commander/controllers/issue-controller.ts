@@ -196,19 +196,37 @@ export const getIssueGraph = async (req: Request, res: Response) => {
       },
     ]);
 
-    const result = counts.map((day: any) => {
-      const openIssues = day.issues
-        .filter((issue: any) => issue.status === "OPEN")
-        .reduce((acc: any, issue: any) => acc + issue.count, 0);
-      const highSeverityIssues = day.issues
-        .filter((issue: any) => issue.severity === "HIGH")
-        .reduce((acc: any, issue: any) => acc + issue.count, 0);
-      const lowSeverityIssues = day.issues
-        .filter((issue: any) => issue.severity === "LOW")
-        .reduce((acc: any, issue: any) => acc + issue.count, 0);
+    const fullRange: Date[] = [];
+    for (let d = new Date(threeDaysAgo); d <= new Date(); d.setDate(d.getDate() + 1)) {
+      fullRange.push(new Date(d));
+    }
+
+    const result = fullRange.map((date) => {
+      const log = counts.find(
+        (log) =>
+          log._id.year === date.getFullYear() &&
+          log._id.month === date.getMonth() + 1 &&
+          log._id.day === date.getDate()
+      );
+
+      const openIssues = log
+        ? log.issues
+            .filter((issue: any) => issue.status === "OPEN")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
+      const highSeverityIssues = log
+        ? log.issues
+            .filter((issue: any) => issue.severity === "HIGH")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
+      const lowSeverityIssues = log
+        ? log.issues
+            .filter((issue: any) => issue.severity === "LOW")
+            .reduce((acc: any, issue: any) => acc + issue.count, 0)
+        : 0;
 
       return {
-        date: `${day._id.year}-${day._id.month}-${day._id.day}`,
+        date: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
         openIssues,
         highSeverityIssues,
         lowSeverityIssues,
