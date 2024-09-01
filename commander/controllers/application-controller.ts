@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Application from "../../arsenal/models/application"; // Adjust the import path as needed
 import Server from "../../arsenal/models/server";
 import RequestLog from "../../arsenal/models/request-log";
+import SecurityConfiguration from "../../arsenal/models/security-conf";
 
 export const getApplications = async (req: Request, res: Response) => {
   const { perPage = "10", page = "1" } = req.query;
@@ -78,6 +79,7 @@ export const getApplicationById = async (req: Request, res: Response) => {
       ...application.toObject(),
       serverCount,
       hits,
+      baseUrl: application.baseUrl
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching application", error });
