@@ -19,8 +19,8 @@ const gRPCObject = gRPC.loadPackageDefinition(packageDef);
 
 const phalanxPackage = gRPCObject.phalanx as GrpcObject;
 const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
-// const lighthousePackage = arsenalPackage.lighthouse as GrpcObject;
-export const sysmonPackage = arsenalPackage.sysmon as GrpcObject;
+const lighthousePackage = arsenalPackage.lighthouse as GrpcObject;
+export const sysmonPackage = lighthousePackage.sysmon as GrpcObject;
 
 const sysmonConstructor =
   sysmonPackage.SysmonService as ServiceClientConstructor;
