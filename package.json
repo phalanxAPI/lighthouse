@@ -4,8 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
-    "dev:sysmon": "node --env-file=.env --watch -r ts-node/register ./sysmon/index.ts"
+    "dev:commander": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
+    "dev:sysmon": "node --env-file=.env --watch -r ts-node/register ./sysmon/index.ts",
+    "dev:outbound": "node --env-file=.env --watch -r ts-node/register ./outbound/index.ts"
   },
   "author": "",
   "license": "ISC",
