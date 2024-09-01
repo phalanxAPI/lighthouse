@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@google/generative-ai':
+    specifier: ^0.17.1
+    version: 0.17.1
   '@grpc/grpc-js':
     specifier: ^1.11.1
     version: 1.11.1
@@ -57,6 +60,11 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+    dev: false
+
+  /@google/generative-ai@0.17.1:
+    resolution: {integrity: sha512-TgWz02c5l2XJlEDys81UVat5+Qg9xqmYah7tQt6xlsBwFvzIFPz64aZFGd1av2sxT22NsssqLATjNsusAIJICA==}
+    engines: {node: '>=18.0.0'}
     dev: false
 
   /@grpc/grpc-js@1.11.1:

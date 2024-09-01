@@ -1,7 +1,9 @@
+import { ObjectId } from "mongoose";
 import Application from "../../arsenal/models/application";
 import RequestLogModel from "../../arsenal/models/request-log";
 import Server from "../../arsenal/models/server";
 import { OutboundResponse, ReportOutboundRequest } from "../types/proto";
+import { scoutAPILogs } from "./scout";
 
 export const reportOutbound = async (
   requestInfo: ReportOutboundRequest
@@ -31,7 +33,18 @@ export const reportOutbound = async (
       timestamp,
     });
 
-    console.log("Outbound request stored successfully", outbound);
+    const history = await RequestLogModel.find({
+      appId: app._id,
+      requestType: "OUTGOING",
+    })
+      .sort({ timestamp: -1 })
+      .limit(20);
+
+    scoutAPILogs(history, outbound, {
+      appId: (app._id as ObjectId).toString(),
+      serverId: server.name,
+    });
+
     return;
   } catch (err) {
     console.error(`Error storing outbound request: ${err}`);
