@@ -1,14 +1,14 @@
+import bodyParser from "body-parser";
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import systemInfoRoutes from "../routes/system-info-routes";
 import apiRoutes from "../routes/api-routes";
-import dotenv from "dotenv";
-import cors from "cors";
-import issueRoutes from "../routes/issue-routes";
 import applicationRoutes from "../routes/application-routes";
-import scanRoutes from "../routes/scan-routes";
+import issueRoutes from "../routes/issue-routes";
 import rulesConfigRouter from "../routes/rulesconfig-routes";
-import bodyParser from "body-parser";
+import scanRoutes from "../routes/scan-routes";
+import systemInfoRoutes from "../routes/system-info-routes";
 
 dotenv.config();
 const app = express();
