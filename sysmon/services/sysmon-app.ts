@@ -13,7 +13,7 @@ export const sysMon = async (data: ReportSystemStateRequest): Promise<SysMonResp
       ...systemInfo, // Spread the systemInfo object to include its properties
     });
 
-    return { message: "System monitoring data stored successfully" };
+    return;
   } catch (err) {
     console.error(`Error storing system monitoring data: ${err}`);
     throw new Error("Failed to store system monitoring data");

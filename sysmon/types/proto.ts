@@ -38,9 +38,7 @@ export type ReportSystemStateRequest = {
   systemInfo: SystemInfo;
 };
 
-export type SysMonResponse = {
-  message: string;
-};
+export type SysMonResponse = void;
 
 export type SysMonService = {
   reportSystemState: (data: ReportSystemStateRequest) => Promise<SysMonResponse>;
