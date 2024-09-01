@@ -1,17 +1,39 @@
-// inbound-app.ts
-import { time } from "console";
+import Application from "../../arsenal/models/application";
 import RequestLog from "../../arsenal/models/request-log";
-import { ReportInboundRequest, ReportInboundResponse, ReportResponseToInboundRequest } from "../types/proto";
+import Server from "../../arsenal/models/server";
+import {
+  ReportInboundRequest,
+  ReportInboundResponse,
+  ReportResponseToInboundRequest,
+} from "../types/proto";
 
-export const inboundHandler = async (data: ReportInboundRequest): Promise<ReportInboundResponse> => {
+export const inboundHandler = async (
+  data: ReportInboundRequest
+): Promise<ReportInboundResponse> => {
   try {
+    const app = await Application.findOne({ name: data.appId });
+    if (!app) {
+      console.error("Application not found");
+      throw new Error("Application not found");
+    }
+
+    const server = await Server.findOne({
+      name: data.serverId,
+      appId: app._id,
+    });
+    if (!server) {
+      console.error("Server not found");
+      throw new Error("Server not found");
+    }
+
     const timestamp = new Date(
       parseInt((data.timestamp as any).seconds.toString()) * 1000
     );
+
     // Assuming appId, serverId, and method, path are already validated and transformed if necessary
     const requestLogEntry = new RequestLog({
-      appId: data.appId,
-      serverId: data.serverId,
+      appId: app,
+      serverId: server,
       method: data.method,
       url: data.url,
       reqParams: data.params,
@@ -22,7 +44,7 @@ export const inboundHandler = async (data: ReportInboundRequest): Promise<Report
     });
 
     const savedEntry: any = await requestLogEntry.save();
-    
+
     return { requestId: savedEntry._id.toString() };
   } catch (err) {
     console.error(`Error saving inbound request log: ${err}`);
@@ -30,7 +52,9 @@ export const inboundHandler = async (data: ReportInboundRequest): Promise<Report
   }
 };
 
-export const inboundResponseHandler = async (data: ReportResponseToInboundRequest): Promise<void> => {
+export const inboundResponseHandler = async (
+  data: ReportResponseToInboundRequest
+): Promise<void> => {
   try {
     const updateResult = await RequestLog.findByIdAndUpdate(data.requestId, {
       statusCode: data.statusCode.toString(),
