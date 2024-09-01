@@ -27,7 +27,7 @@ export const inboundHandler = async (
       throw new Error("Server not found");
     }
 
-    const api = API.findOne({
+    const api = await API.findOne({
       appId: app._id,
       method: data.method,
       endpoint: data.url,
