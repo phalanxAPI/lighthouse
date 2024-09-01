@@ -8,7 +8,8 @@
     "dev:sysmon": "node --env-file=.env --watch -r ts-node/register ./sysmon/index.ts",
     "dev:inbound": "node --env-file=.env --watch -r ts-node/register ./inbound/index.ts",
     "dev:commander": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
-    "dev:outbound": "node --env-file=.env --watch -r ts-node/register ./outbound/index.ts"
+    "dev:outbound": "node --env-file=.env --watch -r ts-node/register ./outbound/index.ts",
+    "dev:navigator": "node --env-file=.env --watch -r ts-node/register ./navigator/index.ts"
   },
   "author": "",
   "license": "ISC",
