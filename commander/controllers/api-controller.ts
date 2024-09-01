@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import API from "../../arsenal/models/api"; // Adjust the import path as needed
 import RequestLog from "../../arsenal/models/request-log"; // Adjust the import path as needed
 import mongoose from "mongoose";
+import Server from "../../arsenal/models/server";
 
 export const getAPIInfo = async (req: Request, res: Response) => {
   const { appId, perPage = "10", page = "1" } = req.query;
@@ -87,84 +88,90 @@ export const getAPIInfoById = async (req: Request, res: Response) => {
   }
 };
 
-export const getRequestLogsForGraph = async (req: Request, res: Response) => {
-  const { apiId, requestType } = req.query;
-
+export async function getRequestLogsForGraph(req: Request, res: Response) {
   try {
-    // Convert apiId to ObjectId
+    const { appId, apiId, requestType } = req.query;
+
     const apiObjectId = new mongoose.Types.ObjectId(apiId as string);
+    const appObjectId = new mongoose.Types.ObjectId(appId as string);
+
+    // Fetch all servers for the given appId
+    const servers = await Server.find({ appId: appObjectId });
 
     // Get the current date and the date one week ago
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
 
-    // Aggregate request logs by server and hour for the past week
-    const logs = await RequestLog.aggregate([
-      {
-        $match: {
-          apiId: apiObjectId,
-          requestType: requestType,
-          timestamp: { $gte: startDate, $lte: endDate },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            serverId: "$serverId",
-            year: { $year: "$timestamp" },
-            month: { $month: "$timestamp" },
-            day: { $dayOfMonth: "$timestamp" },
-            hour: { $hour: "$timestamp" },
+    const serverData = await Promise.all(
+      servers.map(async (server) => {
+        const logs = await RequestLog.aggregate([
+          {
+            $match: {
+              appId: appObjectId,
+              apiId: apiObjectId,
+              serverId: server._id,
+              requestType: requestType,
+              timestamp: { $gte: startDate, $lte: endDate },
+            },
           },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: {
-          "_id.serverId": 1,
-          "_id.year": 1,
-          "_id.month": 1,
-          "_id.day": 1,
-          "_id.hour": 1,
-        },
-      },
-    ]);
+          {
+            $group: {
+              _id: {
+                year: { $year: "$timestamp" },
+                month: { $month: "$timestamp" },
+                day: { $dayOfMonth: "$timestamp" },
+                hour: { $hour: "$timestamp" },
+              },
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $sort: {
+              "_id.year": 1,
+              "_id.month": 1,
+              "_id.day": 1,
+              "_id.hour": 1,
+            },
+          },
+        ]);
 
-    // Generate the full range of hours for the past week
-    const fullRange: Date[] = [];
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setHours(d.getHours() + 1)
-    ) {
-      fullRange.push(new Date(d));
-    }
+        // Generate the full range of hours for the past week
+        const fullRange: Date[] = [];
+        for (
+          let d = new Date(startDate);
+          d <= endDate;
+          d.setHours(d.getHours() + 1)
+        ) {
+          fullRange.push(new Date(d));
+        }
 
-    // Format the data for the graph
-    const graphData = fullRange.map((date) => {
-      const log = logs.find(
-        (log) =>
-          log._id.year === date.getFullYear() &&
-          log._id.month === date.getMonth() + 1 &&
-          log._id.day === date.getDate() &&
-          log._id.hour === date.getHours()
-      );
+        // Format the data for the graph
+        const graphData = fullRange.map((date) => {
+          const log = logs.find(
+            (log) =>
+              log._id.year === date.getFullYear() &&
+              log._id.month === date.getMonth() + 1 &&
+              log._id.day === date.getDate() &&
+              log._id.hour === date.getHours()
+          );
 
-      return {
-        serverId: log ? log._id.serverId : null,
-        time: date,
-        count: log ? log.count : 0,
-      };
-    });
+          return {
+            time: date.toISOString(),
+            count: log ? log.count : 0,
+          };
+        });
 
-    res.json(graphData);
+        return { serverId: server.name, data: graphData };
+      })
+    );
+
+    res.json(serverData);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching request logs for graph", error });
+    console.error("Error fetching API request logs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}
 
 export const markAPIDeprecated = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -279,11 +286,9 @@ export const getRequestLogsForGraphByApiId = async (
 
     res.json(graphData);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching request logs for API on servers",
-        error,
-      });
+    res.status(500).json({
+      message: "Error fetching request logs for API on servers",
+      error,
+    });
   }
 };
