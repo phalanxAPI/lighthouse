@@ -13,7 +13,6 @@ const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
 const scoutPackage = arsenalPackage.scout as GrpcObject;
 
 const scoutConstructor = scoutPackage.ScoutService as ServiceClientConstructor;
-const scoutService = scoutConstructor.service;
 
 export var scoutClient = new scoutConstructor(
   process.env.SCOUT_SERVICE || "localhost:9001",
