@@ -1,7 +1,9 @@
 import API from "../../arsenal/models/api";
 import Application from "../../arsenal/models/application";
+import Issue from "../../arsenal/models/issue";
 import RequestLog from "../../arsenal/models/request-log";
 import Server from "../../arsenal/models/server";
+import { SecurityConfigType } from "../../arsenal/types/security-conf";
 import {
   ReportInboundRequest,
   ReportInboundResponse,
@@ -36,7 +38,18 @@ export const inboundHandler = async (
       return { requestId: "" };
     }
 
-    // TODO: Create issue if API is deprecated
+    if (api.isDeprecated) {
+      const issueDescription =
+        "This API has been deprecated and should not be used.";
+
+      await Issue.create({
+        apiId: api._id,
+        appId: app._id,
+        title: SecurityConfigType.IMPROPER_INVENTORY_MANAGEMENT,
+        description: issueDescription,
+        severity: "LOW",
+      });
+    }
 
     const timestamp = new Date(
       parseInt((data.timestamp as any).seconds.toString()) * 1000
