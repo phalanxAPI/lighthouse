@@ -72,8 +72,11 @@ export const getApplicationById = async (req: Request, res: Response) => {
       requestType: "INCOMING",
     });
 
+    const serverCount = await Server.countDocuments({ appId: id });
+
     res.json({
       ...application.toObject(),
+      serverCount,
       hits,
     });
   } catch (error) {
