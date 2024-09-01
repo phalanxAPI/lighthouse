@@ -3,7 +3,6 @@ import API from "../../arsenal/models/api";
 import Application from "../../arsenal/models/application";
 import Server from "../../arsenal/models/server";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
-import mongoose from "mongoose";
 
 interface RoutingTree {
   methods?: Record<string, boolean>;
@@ -36,30 +35,20 @@ const flattenRoutingTree = (
 
 export const updateRoutesHandler = async (data: NavigatorRequest): Promise<Empty> => {
   try {
-    // Find the application by name and get its ID
-    let application = await Application.findOne({ name: data.appName });
-    let appId;
+    // Upsert the application
+    const application = await Application.findOneAndUpdate(
+      { name: data.appId },
+      { $set: { baseUrl: data.baseUrl } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    const appId = application._id;
 
-    if (!application) {
-      // Create a new application if it doesn't exist
-      application = new Application({
-        name: data.appName,
-        baseUrl: "", // Set the baseUrl as needed
-      });
-      await application.save();
-      appId = application._id;
-      console.log(`Created new application: ${data.appName}`);
-
-      // Create a new server for the application
-      const server = new Server({
-        name: data.serverName,
-        appId: appId,
-      });
-      await server.save();
-      console.log(`Created new server: ${data.serverName} for application: ${data.appName}`);
-    } else {
-      appId = application._id;
-    }
+    // Upsert the server
+    await Server.findOneAndUpdate(
+      { name: data.serverId, appId: appId },
+      { $set: { name: data.serverId, appId: appId } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     const apis = flattenRoutingTree(data.routingTree, "/");
 

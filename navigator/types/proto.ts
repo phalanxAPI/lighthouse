@@ -6,8 +6,8 @@ export type RoutingTree = {
 };
 
 export type NavigatorRequest = {
-  appName: string;
-  serverName: string;
+  appId: string;
+  serverId: string;
   baseUrl: string;
   routingTree: RoutingTree;
 };
