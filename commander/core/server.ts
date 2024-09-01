@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import systemInfoRoutes from "../routes/system-info-routes";
 import apiRoutes from "../routes/api-routes";
 import dotenv from "dotenv";
+import cors from "cors";
 import issueRoutes from "../routes/issue-routes";
 import applicationRoutes from "../routes/application-routes";
 import scanRoutes from "../routes/scan-routes";
@@ -16,7 +17,7 @@ const port = process.env.COMMANDER_PORT || 8000;
 mongoose.connect(process.env.MONGODB_URI || "");
 
 app.use(bodyParser.json());
-
+app.use(cors());
 app.use("/api/v1", systemInfoRoutes);
 app.use("/api/v1", apiRoutes);
 app.use("/api/v1", issueRoutes);
