@@ -1,3 +1,4 @@
+import API from "../../arsenal/models/api";
 import Application from "../../arsenal/models/application";
 import RequestLog from "../../arsenal/models/request-log";
 import Server from "../../arsenal/models/server";
@@ -26,12 +27,23 @@ export const inboundHandler = async (
       throw new Error("Server not found");
     }
 
+    const api = API.findOne({
+      appId: app._id,
+      method: data.method,
+      endpoint: data.url,
+    });
+    if (!api) {
+      return { requestId: "" };
+    }
+
+    // TODO: Create issue if API is deprecated
+
     const timestamp = new Date(
       parseInt((data.timestamp as any).seconds.toString()) * 1000
     );
 
-    // Assuming appId, serverId, and method, path are already validated and transformed if necessary
     const requestLogEntry = new RequestLog({
+      apiId: api,
       appId: app,
       serverId: server,
       method: data.method,
@@ -39,7 +51,7 @@ export const inboundHandler = async (
       reqParams: data.params,
       reqBody: data.body,
       reqHeaders: data.headers,
-      timestamp: timestamp, // Convert protobuf Timestamp to JavaScript Date
+      timestamp: timestamp,
       requestType: "INCOMING",
     });
 
