@@ -105,15 +105,18 @@ export async function getRequestLogsForGraph(req: Request, res: Response) {
 
     const serverData = await Promise.all(
       servers.map(async (server) => {
+        const query = {
+          appId: appObjectId,
+          serverId: server._id,
+          requestType: requestType,
+          timestamp: { $gte: startDate, $lte: endDate },
+        } as Record<string, any>;
+        if (apiId) {
+          query["apiId"] = apiObjectId;
+        }
         const logs = await RequestLog.aggregate([
           {
-            $match: {
-              appId: appObjectId,
-              apiId: apiObjectId,
-              serverId: server._id,
-              requestType: requestType,
-              timestamp: { $gte: startDate, $lte: endDate },
-            },
+            $match: query,
           },
           {
             $group: {
