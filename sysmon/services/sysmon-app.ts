@@ -13,7 +13,6 @@ export const sysMon = async (
   );
 
   try {
-    console.log(data);
     const app = await Application.findOne({ name: data.appId });
     if (!app) {
       console.error("Application not found");
