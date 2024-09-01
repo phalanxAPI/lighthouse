@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Application from "../../arsenal/models/application"; // Adjust the import path as needed
 import Server from "../../arsenal/models/server";
+import RequestLog from "../../arsenal/models/request-log";
 
 export const getApplications = async (req: Request, res: Response) => {
   const { perPage = "10", page = "1" } = req.query;
@@ -21,19 +22,24 @@ export const getApplications = async (req: Request, res: Response) => {
     // Get total count for pagination metadata
     const totalCount = await Application.countDocuments();
 
-    // Fetch server counts for each application
-    const applicationsWithServerCount = await Promise.all(
+    // Fetch server counts and hits for each application
+    const applicationsWithDetails = await Promise.all(
       applications.map(async (app) => {
         const serverCount = await Server.countDocuments({ appId: app._id });
+        const hits = await RequestLog.countDocuments({
+          appId: app._id,
+          requestType: "INCOMING",
+        });
         return {
           ...app.toObject(),
           serverCount,
+          hits,
         };
       })
     );
 
     res.json({
-      data: applicationsWithServerCount,
+      data: applicationsWithDetails,
       meta: {
         totalCount,
         perPage: limit,
@@ -60,7 +66,16 @@ export const getApplicationById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    res.json(application);
+    // Fetch the number of hits (incoming requests) for the application
+    const hits = await RequestLog.countDocuments({
+      appId: applicationId,
+      requestType: "INCOMING",
+    });
+
+    res.json({
+      ...application.toObject(),
+      hits,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error fetching application", error });
   }
