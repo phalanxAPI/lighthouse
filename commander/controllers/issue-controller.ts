@@ -22,11 +22,12 @@ export const getIssues = async (req: Request, res: Response) => {
 
   console.log(`Received appId: ${appId}`); // Debugging log
   try {
-    if (!appId) {
-      return res.status(400).json({ message: "appId is required" });
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(appId as string)) {
+      return res.status(400).json({ message: "Invalid Application ID" });
     }
 
-    const appObjectId = appId as string;
+    const appObjectId = new mongoose.Types.ObjectId(appId as string);
     console.log(`Converted appId to ObjectId: ${appObjectId}`); // Debugging log
 
     const limit = parseInt(perPage as string) || 10;
