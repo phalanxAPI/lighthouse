@@ -4,8 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:commander": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
+    "dev": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
     "dev:sysmon": "node --env-file=.env --watch -r ts-node/register ./sysmon/index.ts",
+    "dev:inbound": "node --env-file=.env --watch -r ts-node/register ./inbound/index.ts",
+    "dev:commander": "nodemon ./commander/core/server.ts && nodemon ./sysmon/index.ts",
     "dev:outbound": "node --env-file=.env --watch -r ts-node/register ./outbound/index.ts"
   },
   "author": "",
