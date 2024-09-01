@@ -76,7 +76,9 @@ export const getCpuUsageForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
-        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
+        console.log(
+          `Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`
+        );
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -104,7 +106,7 @@ export const getCpuUsageForGraph = async (req: Request, res: Response) => {
           };
         });
 
-        return { serverId: server._id, data: graphData };
+        return { serverId: server.name, data: graphData };
       })
     );
 
@@ -163,7 +165,9 @@ export const getMemoryUsageForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
-        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
+        console.log(
+          `Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`
+        );
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -191,7 +195,7 @@ export const getMemoryUsageForGraph = async (req: Request, res: Response) => {
           };
         });
 
-        return { serverId: server._id, data: graphData };
+        return { serverId: server.name, data: graphData };
       })
     );
 
@@ -251,7 +255,9 @@ export const getDiskIOForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
-        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
+        console.log(
+          `Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`
+        );
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -280,7 +286,7 @@ export const getDiskIOForGraph = async (req: Request, res: Response) => {
           };
         });
 
-        return { serverId: server._id, data: graphData };
+        return { serverId: server.name, data: graphData };
       })
     );
 
@@ -345,7 +351,9 @@ export const getNetworkStatsForGraph = async (req: Request, res: Response) => {
             },
           },
         ]);
-        console.log(`Fetched logs for server ${server._id}: ${JSON.stringify(logs)}`);
+        console.log(
+          `Fetched logs for server ${server.name}: ${JSON.stringify(logs)}`
+        );
 
         // Generate the full range of hours for the past week
         const fullRange: Date[] = [];
@@ -374,7 +382,7 @@ export const getNetworkStatsForGraph = async (req: Request, res: Response) => {
           };
         });
 
-        return { serverId: server._id, data: graphData };
+        return { serverId: server.name, data: graphData };
       })
     );
 
