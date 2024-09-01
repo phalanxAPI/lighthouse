@@ -25,7 +25,8 @@ const flattenRoutingTree = (
 
   if (tree.children) {
     Object.entries(tree.children).forEach(([segment, childTree]) => {
-      const newPath = parentPath === "/" ? `/${segment}` : `${parentPath}/${segment}`;
+      const newPath =
+        parentPath === "/" ? `/${segment}` : `${parentPath}/${segment}`;
       flattenRoutingTree(childTree, newPath, apis);
     });
   }
@@ -33,7 +34,9 @@ const flattenRoutingTree = (
   return apis;
 };
 
-export const updateRoutesHandler = async (data: NavigatorRequest): Promise<Empty> => {
+export const updateRoutesHandler = async (
+  data: NavigatorRequest
+): Promise<Empty> => {
   try {
     // Upsert the application
     const application = await Application.findOneAndUpdate(

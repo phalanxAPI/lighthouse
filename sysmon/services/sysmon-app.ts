@@ -1,8 +1,11 @@
-// sysMon.ts
+import Application from "../../arsenal/models/application";
+import Server from "../../arsenal/models/server";
 import SystemInfo from "../../arsenal/models/system-info";
 import { ReportSystemStateRequest, SysMonResponse } from "../types/proto";
 
-export const sysMon = async (data: ReportSystemStateRequest): Promise<SysMonResponse> => {
+export const sysMon = async (
+  data: ReportSystemStateRequest
+): Promise<SysMonResponse> => {
   const { appId, serverId, timestamp, systemInfo } = data;
 
   const newTimestamp = new Date(
@@ -10,9 +13,25 @@ export const sysMon = async (data: ReportSystemStateRequest): Promise<SysMonResp
   );
 
   try {
-    const sysMonEntry = await SystemInfo.create({
-      appId,
-      serverId,
+    console.log(data);
+    const app = await Application.findOne({ name: data.appId });
+    if (!app) {
+      console.error("Application not found");
+      throw new Error("Application not found");
+    }
+
+    const server = await Server.findOne({
+      name: data.serverId,
+      appId: app._id,
+    });
+    if (!server) {
+      console.error("Server not found");
+      throw new Error("Server not found");
+    }
+
+    await SystemInfo.create({
+      appId: app,
+      serverId: server,
       timestamp: newTimestamp,
       ...systemInfo, // Spread the systemInfo object to include its properties
     });
