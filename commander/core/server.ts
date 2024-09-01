@@ -11,7 +11,7 @@ import bodyParser from "body-parser";
 
 dotenv.config();
 const app = express();
-const port = 3000;
+const port = process.env.COMMANDER_PORT || 8000;
 
 mongoose.connect(process.env.MONGODB_URI || "");
 

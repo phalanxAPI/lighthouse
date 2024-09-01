@@ -4,10 +4,9 @@ import * as path from 'path';
 import { GrpcObject, ServiceClientConstructor } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
 import { SysMonService } from "../types/proto";
-import { sysMon } from "../services/sysmonApp";
 // import { initDB } from "./db";
 
-const PORT = process.env.PORT || 9001;
+const PORT = process.env.SYSMON_PORT || 9002;
 
 const packageDef = loadSync(path.join(__dirname, "../../arsenal/proto/sysmon.lighthouse.proto"), {
   // "grpc.max_receive_message_length": length as number, "grpc.max_send_message_length": length as number
