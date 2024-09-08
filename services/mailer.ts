@@ -14,7 +14,7 @@ export const sendEmail = async ({
 }) => {
   try {
     const emailMessage: EmailMessage = {
-      senderAddress: process.env.AZURE_SENDER_MAI || "",
+      senderAddress: process.env.AZURE_SENDER_MAIL || "",
       content: {
         subject,
         plainText: body,
