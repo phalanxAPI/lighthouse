@@ -18,7 +18,10 @@ export const getScans = async (req: Request, res: Response) => {
 
     // Fetch scans with pagination and filter by appId if provided
     const query = appObjectId ? { appId: appObjectId } : {};
-    const scans = await Scan.find(query).skip(skip).limit(limit);
+    const scans = await Scan.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     if (scans.length === 0) {
       return res.status(404).json({ message: "No scans found" });
