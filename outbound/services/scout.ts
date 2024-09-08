@@ -1,8 +1,11 @@
 import { ResponseSchema, SchemaType } from "@google/generative-ai";
-import { RequestLogSchemaDoc } from "../../arsenal/models/request-log";
-import { executeGemini } from "./gemini";
 import Issue from "../../arsenal/models/issue";
+import { RequestLogSchemaDoc } from "../../arsenal/models/request-log";
+import User from "../../arsenal/models/user";
 import { SecurityConfigType } from "../../arsenal/types/security-conf";
+import { UserRole } from "../../arsenal/types/user";
+import { sendEmail } from "../../services/mailer";
+import { executeGemini } from "./gemini";
 
 const DEFAULT_RES_SCHEMA: ResponseSchema = {
   type: SchemaType.OBJECT,
@@ -29,6 +32,7 @@ export const scoutAPILogs = async (
   options: {
     appId: string;
     serverId: string;
+    appName: string;
   }
 ) => {
   try {
@@ -65,12 +69,29 @@ export const scoutAPILogs = async (
         "\n\nExplanation: \n" +
         formattedResponse.description;
 
-      await Issue.create({
+      const issue = await Issue.create({
         appId: options.appId,
         title: SecurityConfigType.UNSAFE_CONSUMPTION_OF_APIS,
         description: issueDescription,
         severity: formattedResponse.severity || "HIGH",
       });
+
+      const admin = await User.findOne({ role: UserRole.ADMIN }).lean();
+      if (admin) {
+        const receiverMail = admin.email;
+        const receiverName = `${admin.firstName} ${admin.lastName}`;
+        const issueLink = `${process.env.PHALANX_BASE_URL}/issues/${issue._id}`;
+        const subject = `LOW Vulnerability Detected in ${options.appName} API`;
+        const message = `Hello ${receiverName},\n\nA ${"LOW"} vulnerability has been detected in the ${
+          options.appName
+        } API. Please check the issue at ${issueLink}.\n\nRegards,\nAPI Arsenal`;
+
+        sendEmail({
+          subject: subject,
+          body: message,
+          to: receiverMail,
+        });
+      }
       return formattedResponse;
     }
   } catch (err) {

@@ -3,7 +3,10 @@ import Application from "../../arsenal/models/application";
 import Issue from "../../arsenal/models/issue";
 import RequestLog from "../../arsenal/models/request-log";
 import Server from "../../arsenal/models/server";
+import User from "../../arsenal/models/user";
 import { SecurityConfigType } from "../../arsenal/types/security-conf";
+import { UserRole } from "../../arsenal/types/user";
+import { sendEmail } from "../../services/mailer";
 import {
   ReportInboundRequest,
   ReportInboundResponse,
@@ -42,13 +45,30 @@ export const inboundHandler = async (
       const issueDescription =
         "This API has been deprecated and should not be used.";
 
-      await Issue.create({
+      const issue = await Issue.create({
         apiId: api._id,
         appId: app._id,
         title: SecurityConfigType.IMPROPER_INVENTORY_MANAGEMENT,
         description: issueDescription,
         severity: "LOW",
       });
+
+      const admin = await User.findOne({ role: UserRole.ADMIN }).lean();
+      if (admin) {
+        const receiverMail = admin.email;
+        const receiverName = `${admin.firstName} ${admin.lastName}`;
+        const issueLink = `${process.env.PHALANX_BASE_URL}/issues/${issue._id}`;
+        const subject = `LOW Vulnerability Detected in ${app.name} API`;
+        const message = `Hello ${receiverName},\n\nA ${"LOW"} vulnerability has been detected in the ${
+          app.name
+        } API. Please check the issue at ${issueLink}.\n\nRegards,\nAPI Arsenal`;
+
+        sendEmail({
+          subject: subject,
+          body: message,
+          to: receiverMail,
+        });
+      }
     }
 
     const timestamp = new Date(

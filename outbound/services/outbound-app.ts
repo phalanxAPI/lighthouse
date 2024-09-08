@@ -48,6 +48,7 @@ export const reportOutbound = async (
     scoutAPILogs(history, outbound, {
       appId: (app._id as ObjectId).toString(),
       serverId: server.name,
+      appName: app.name,
     });
 
     return;
