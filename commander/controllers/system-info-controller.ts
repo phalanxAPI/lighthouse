@@ -15,10 +15,18 @@ export const getSystemInfo = async (req: Request, res: Response) => {
     const serverObjectId = new mongoose.Types.ObjectId(serverId as string);
 
     // Fetch system info based on appId and serverId
-    const systemInfo = await SystemInfo.findOne({
-      appId: appObjectId,
-      serverId: serverObjectId,
-    });
+    const systemInfo = await SystemInfo.findOne(
+      {
+        appId: appObjectId,
+        serverId: serverObjectId,
+      },
+      {},
+      {
+        sort: { updatedAt: -1 },
+      }
+    );
+
+    console.log("systemInfo", serverId, systemInfo);
 
     if (!systemInfo) {
       return res.status(404).json({ message: "System info not found" });
