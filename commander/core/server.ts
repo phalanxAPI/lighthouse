@@ -5,6 +5,7 @@ import express from "express";
 import mongoose from "mongoose";
 import apiRoutes from "../routes/api-routes";
 import applicationRoutes from "../routes/application-routes";
+import clerkRoutes from "../routes/clear-routes";
 import issueRoutes from "../routes/issue-routes";
 import rulesConfigRouter from "../routes/rulesconfig-routes";
 import scanRoutes from "../routes/scan-routes";
@@ -24,6 +25,7 @@ app.use("/api/v1", issueRoutes);
 app.use("/api/v1", applicationRoutes);
 app.use("/api/v1", scanRoutes);
 app.use("/api/v1", rulesConfigRouter);
+app.use("/api/v1/clerk", clerkRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
