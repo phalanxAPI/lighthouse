@@ -79,7 +79,7 @@ export const getApplicationById = async (req: Request, res: Response) => {
       ...application.toObject(),
       serverCount,
       hits,
-      baseUrl: application.baseUrl
+      baseUrl: application.baseUrl,
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching application", error });
@@ -115,5 +115,27 @@ export const upsertApplicationBaseUrl = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(`Error upserting baseUrl: ${error}`); // Debugging log
     res.status(500).json({ message: "Error upserting baseUrl", error });
+  }
+};
+
+export const getAllApplicationServers = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    // Convert id to ObjectId
+    const applicationId = new mongoose.Types.ObjectId(id);
+
+    // Fetch all servers for the application
+    const servers = await Server.find({ appId: applicationId });
+
+    if (servers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No servers found for the application" });
+    }
+
+    res.json(servers);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching servers", error });
   }
 };

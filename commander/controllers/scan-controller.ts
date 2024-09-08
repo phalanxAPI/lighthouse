@@ -64,6 +64,7 @@ export const getScanById = async (req: Request, res: Response) => {
 export const createScan = async (req: Request, res: Response) => {
   const { appId } = req.query;
 
+  console.log(`Creating scan for appId: ${appId}`);
   if (!appId) {
     return res.status(400).json({ message: "appId is required" });
   }
