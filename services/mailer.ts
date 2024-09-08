@@ -13,6 +13,7 @@ export const sendEmail = async ({
   to: string;
 }) => {
   try {
+    console.log(`Sending email to ${to}`);
     const emailMessage: EmailMessage = {
       senderAddress: process.env.AZURE_SENDER_MAIL || "",
       content: {

@@ -3,6 +3,9 @@ import API from "../../arsenal/models/api";
 import Application from "../../arsenal/models/application";
 import Server from "../../arsenal/models/server";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
+import User from "../../arsenal/models/user";
+import { sendEmail } from "../../services/mailer";
+import { UserRole } from "../../arsenal/types/user";
 
 interface RoutingTree {
   methods?: Record<string, boolean>;
@@ -56,11 +59,34 @@ export const updateRoutesHandler = async (
     const apis = flattenRoutingTree(data.routingTree, "/");
 
     for (const api of apis) {
-      await API.findOneAndUpdate(
+      const res = await API.findOneAndUpdate(
         { appId: appId, endpoint: api.endpoint, method: api.method },
         { $setOnInsert: { isVerified: false, isDeprecated: false } },
-        { upsert: true, new: true }
+        { upsert: true }
       );
+
+      // check if the api is newly created
+      if (!res) {
+        const admin = await User.findOne({ role: UserRole.ADMIN }).lean();
+        if (admin) {
+          const receiverMail = admin.email;
+          const receiverName = `${admin.firstName} ${admin.lastName}`;
+          const subject = `New API Detected in ${application.name}`;
+          const apiData = await API.findOne({
+            appId: appId,
+            endpoint: api.endpoint,
+            method: api.method,
+          }).lean();
+          const apiLink = `${process.env.PHALANX_BASE_URL}/apiInventory/${apiData?._id}`;
+          const message = `Hello ${receiverName},\n\nA new API has been detected in the ${application.name} application. Please check, verify and setup security configurations for the API at ${apiLink}.`;
+
+          sendEmail({
+            subject: subject,
+            body: message,
+            to: receiverMail,
+          });
+        }
+      }
     }
 
     return new Empty();
