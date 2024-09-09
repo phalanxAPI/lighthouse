@@ -213,6 +213,43 @@ export const markAPIDeprecated = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyAPI = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  console.log(`Received id: ${id}`); // Debugging log
+
+  try {
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid API ID" });
+    }
+
+    const apiObjectId = new mongoose.Types.ObjectId(id);
+
+    // Update the API to mark it as verified and update the updatedAt time
+    const updatedAPI = await API.findByIdAndUpdate(
+      apiObjectId,
+      {
+        isVerified: true,
+        updatedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!updatedAPI) {
+      return res.status(404).json({ message: "API not found" });
+    }
+
+    res.json({
+      message: "API verified successfully",
+      api: updatedAPI,
+    });
+  } catch (error) {
+    console.error(`Error verifying API: ${error}`); // Debugging log
+    res.status(500).json({ message: "Error verifying API", error });
+  }
+};
+
 export const getRequestLogsForGraphByApiId = async (
   req: Request,
   res: Response

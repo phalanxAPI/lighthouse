@@ -2,9 +2,10 @@ import express from "express";
 import {
   getAPIInfo,
   getAPIInfoById,
-  getRequestLogsForGraphByApiId,
   getRequestLogsForGraph,
+  getRequestLogsForGraphByApiId,
   markAPIDeprecated,
+  verifyAPI,
 } from "../controllers/api-controller";
 
 const apiRoutes = express.Router();
@@ -15,6 +16,8 @@ apiRoutes.get("/api-info", getAPIInfo);
 apiRoutes.get("/api-info/:id", getAPIInfoById);
 
 apiRoutes.get("/api-info-graph", getRequestLogsForGraph);
+
+apiRoutes.put("/api-info/:id/verify", verifyAPI);
 
 apiRoutes.put("/api-info/:id/deprecate", markAPIDeprecated);
 
