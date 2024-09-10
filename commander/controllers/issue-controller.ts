@@ -38,6 +38,7 @@ export const getIssues = async (req: Request, res: Response) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     const issues = await Issue.find({ appId: appObjectId })
+      .sort({ raisedAt: -1 })
       .limit(limit)
       .skip(skip);
     console.log(`Found issues: ${JSON.stringify(issues)}`); // Debugging log
@@ -197,7 +198,11 @@ export const getIssueGraph = async (req: Request, res: Response) => {
     ]);
 
     const fullRange: Date[] = [];
-    for (let d = new Date(threeDaysAgo); d <= new Date(); d.setDate(d.getDate() + 1)) {
+    for (
+      let d = new Date(threeDaysAgo);
+      d <= new Date();
+      d.setDate(d.getDate() + 1)
+    ) {
       fullRange.push(new Date(d));
     }
 
